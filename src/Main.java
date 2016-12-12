@@ -1,11 +1,10 @@
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.util.Random;
 
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
@@ -13,39 +12,41 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.GrayPaintScale;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.title.PaintScaleLegend;
 import org.jfree.data.DomainOrder;
 import org.jfree.data.general.DatasetChangeListener;
 import org.jfree.data.general.DatasetGroup;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.XYZDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
-import org.jfree.ui.RefineryUtilities;
-
-
-
 
 public class Main {
-	int selectedHeight = 2;
+	int selectedHeight = 50;
 		public int getSelectedHeight() {
 			return selectedHeight;
 		}
 		public void setSelectedHeight(int selectedHeight) {
 			this.selectedHeight = selectedHeight;
 		}
-
-
-
+		
+	//create UI and insert all the plots
 	public void display(){
 		//create main window
 		JFrame mainWindow = new JFrame("TabChart");
@@ -70,7 +71,6 @@ public class Main {
 				if(value != getSelectedHeight()){
 					setSelectedHeight(value);
 					updatePlot();
-					System.out.println("Height has been changed to: "+getSelectedHeight());
 				}
 				
 			}
@@ -109,15 +109,11 @@ public class Main {
 		
 		//create area 3 for plot 3 second pane
 		JPanel area3 = new JPanel();
-		ImageIcon tempImg3 = new ImageIcon("media/TimeSeriesGraph.jpg");
-		JLabel label3 = new JLabel("", tempImg3, JLabel.CENTER);
-		area3.add(label3);
+		area3.add(createChart3());
 
 		//create area 4 for plot 4 second pane
 		JPanel area4 = new JPanel();
-		ImageIcon tempImg4 = new ImageIcon("media/tsplot.jpg");
-		JLabel label4 = new JLabel("", tempImg4, JLabel.CENTER);
-		area4.add(label4);
+		area4.add(createChart4());
 		
 		//add areas to panel 2
 		jPanel2.add(area3);
@@ -133,8 +129,6 @@ public class Main {
 		mainWindow.setLocationRelativeTo(null);
 		mainWindow.setVisible(true);
 	}
-	
-
 	
     //create Sample Data set for plot2
     private static XYZDataset createDatasetPlot1(int height) { 
@@ -243,6 +237,7 @@ public class Main {
         }; 
     }
 	
+    //create Chart 1
     private static ChartPanel createChart1(XYZDataset dataset) { 
         NumberAxis xAxis = new NumberAxis("X"); 
         xAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits()); 
@@ -284,6 +279,7 @@ public class Main {
         return new ChartPanel(chart); 
     }
     
+    //create Chart 2
     private static ChartPanel createChart2(XYZDataset dataset) { 
         NumberAxis xAxis = new NumberAxis("X"); 
         xAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits()); 
@@ -325,7 +321,118 @@ public class Main {
         return new ChartPanel(chart);
     }
 	
-	
+    //create sample dataset for plot 3
+    private static XYDataset createDatasetPlot3() {   
+    	   
+        // create pressure dataset  
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        XYSeries pressureSeries = new XYSeries("Pressure");
+        Random randomGenerator = new Random();
+        double pressure;
+        int START = 960;
+        int END = 1030;
+        //create a datapoint for each minute
+        for(int i = 0; i<480; i++){
+        	pressure = showRandomInteger(START, END, randomGenerator);
+        	pressure = pressure / 100;
+        	pressureSeries.add(i, pressure);
+        }
+
+        dataset.addSeries(pressureSeries);
+        return dataset;   
+    }
+    
+    //create sample dataset for plot4
+    private static XYDataset createDatasetPlot4() {   
+ 	   
+        // create temperature dataset  
+  
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        XYSeries temperatureSeries = new XYSeries("Temperature");
+        Random randomGenerator = new Random();
+        double temperature;
+        int START = 10;
+        int END = 35;
+        //create a datapoint for each minute
+        for(int i = 0; i<480; i++){
+        	temperature = showRandomInteger(START, END, randomGenerator);
+        	temperatureSeries.add(i, temperature);
+        }
+
+        dataset.addSeries(temperatureSeries);
+        return dataset;   
+    }
+    
+    //creating random integer in a set range
+    private static int showRandomInteger(int aStart, int aEnd, Random aRandom){
+        if (aStart > aEnd) {
+          throw new IllegalArgumentException("Start cannot exceed End.");
+        }
+        //get the range, casting to long to avoid overflow problems
+        long range = (long)aEnd - (long)aStart + 1;
+        // compute a fraction of the range, 0 <= frac < range
+        long fraction = (long)(range * aRandom.nextDouble());
+        int randomNumber =  (int)(fraction + aStart);
+        return randomNumber;
+      }
+    
+    //create Chart 3
+    private static ChartPanel createChart3(){
+    	JFreeChart chart3 = ChartFactory.createXYLineChart(
+    			"Pressure over 48 hours", // title,
+                "Minutes", // xAxisLabel,
+                "Pressure (dBar)", // yAxisLabel,
+                createDatasetPlot3(), // dataset,
+                PlotOrientation.VERTICAL, // orientation,
+                true, // legend,
+                true, // tooltips,
+                false // urls
+                );
+    	XYPlot xyPlot = (XYPlot) chart3.getPlot();
+        xyPlot.setDomainCrosshairVisible(true);
+        xyPlot.setRangeCrosshairVisible(true);
+        XYItemRenderer renderer = xyPlot.getRenderer();
+        renderer.setSeriesPaint(0, Color.blue);
+        NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
+        domain.setRange(0, 480);
+        domain.setTickUnit(new NumberTickUnit(60));
+        domain.setVerticalTickLabels(true);
+        NumberAxis range = (NumberAxis) xyPlot.getRangeAxis();
+        range.setRange(9.4, 10.5);
+        range.setTickUnit(new NumberTickUnit(0.1));
+      
+    	return new ChartPanel(chart3);
+    }
+    
+    //create Chart 4
+    private static ChartPanel createChart4(){
+    	JFreeChart chart4 = ChartFactory.createXYLineChart(
+    			"Temperature over 48 hours", // title,
+                "Minutes", // xAxisLabel,
+                "Temperature (°C)", // yAxisLabel,
+                createDatasetPlot4(), // dataset,
+                PlotOrientation.VERTICAL, // orientation,
+                true, // legend,
+                true, // tooltips,
+                false // urls
+                );
+    	XYPlot xyPlot = (XYPlot) chart4.getPlot();
+        xyPlot.setDomainCrosshairVisible(true);
+        xyPlot.setRangeCrosshairVisible(true);
+        
+        XYItemRenderer renderer = xyPlot.getRenderer();
+        renderer.setSeriesPaint(0, Color.red);
+        NumberAxis domain = (NumberAxis) xyPlot.getDomainAxis();
+        domain.setRange(0, 480);
+        domain.setTickUnit(new NumberTickUnit(60));
+        domain.setVerticalTickLabels(true);
+        NumberAxis range = (NumberAxis) xyPlot.getRangeAxis();
+        range.setRange(0, 41);
+        range.setTickUnit(new NumberTickUnit(10));
+      
+    	return new ChartPanel(chart4);
+    }
+    
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			@Override
