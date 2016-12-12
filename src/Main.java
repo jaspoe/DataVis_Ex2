@@ -68,9 +68,29 @@ public class Main {
 		jPanel1.add(area1);
 		jPanel1.add(area2);
 		
+		//create pane 2
+		JPanel jPanel2 = new JPanel();
+		jPanel2.setLayout(new BoxLayout(jPanel2, BoxLayout.Y_AXIS));
+		
+		//create area 3 for plot 1 second pane
+		JPanel area3 = new JPanel();
+		ImageIcon tempImg3 = new ImageIcon("media/TimeSeriesGraph.jpg");
+		JLabel label3 = new JLabel("", tempImg3, JLabel.CENTER);
+		area3.add(label3);
+		
+		//create area 4 for plot 2 second pane
+		JPanel area4 = new JPanel();
+		ImageIcon tempImg4 = new ImageIcon("media/tsplot.jpg");
+		JLabel label4 = new JLabel("", tempImg4, JLabel.CENTER);
+		area4.add(label4);
+		
+		//add areas to panel 2
+		jPanel2.add(area3);
+		jPanel2.add(area4);
+		
 		//add Panels to TabbedPane
 		jtp.add("Plot 1 and 2", jPanel1);
-		//jtp.add("Plot 3", jPanel2);
+		jtp.add("Plot 3", jPanel2);
 		
 		//finish UI
 		mainWindow.add(jtp);
