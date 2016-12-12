@@ -1,4 +1,6 @@
+import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -11,15 +13,36 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class Main {
-	int selectedHight = 0;
-		public int getSelectedHight() {
-			return selectedHight;
-		}
-		public void setSelectedHight(int selectedHight) {
-			this.selectedHight = selectedHight;
-		}
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.GrayPaintScale;
+import org.jfree.chart.renderer.PaintScale;
+import org.jfree.chart.renderer.xy.XYBlockRenderer;
+import org.jfree.chart.title.PaintScaleLegend;
+import org.jfree.data.DomainOrder;
+import org.jfree.data.general.DatasetChangeListener;
+import org.jfree.data.general.DatasetGroup;
+import org.jfree.data.xy.XYZDataset;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.ui.RefineryUtilities;
 
+
+
+
+public class Main {
+	int selectedHeight = 2;
+		public int getSelectedHeight() {
+			return selectedHeight;
+		}
+		public void setSelectedHeight(int selectedHeight) {
+			this.selectedHeight = selectedHeight;
+		}
 
 
 
@@ -33,8 +56,7 @@ public class Main {
 		JPanel jPanel1 = new JPanel();
 		jPanel1.setLayout(new BoxLayout(jPanel1, BoxLayout.Y_AXIS));
 		
-		//create area 0 with the slider
-		JPanel area0 = new JPanel();
+		//create slider
 		final int HIGHT_MIN = 0;
 		final int HIGHT_MAX = 100;
 		final int HIGHT_INIT = 50;
@@ -44,41 +66,54 @@ public class Main {
 		ChangeListener hightListener = new ChangeListener(){
 			public void stateChanged(ChangeEvent e){
 				JSlider source = (JSlider)e.getSource();
-				setSelectedHight(source.getValue());
-				System.out.println("Hight has been changed to: "+getSelectedHight());
+				int value = source.getValue();
+				if(value != getSelectedHeight()){
+					setSelectedHeight(value);
+					updatePlot();
+					System.out.println("Height has been changed to: "+getSelectedHeight());
+				}
+				
+			}
+			public void updatePlot(){
+				jPanel1.remove(1);
+				jPanel1.remove(1);
+				jPanel1.add(createChart1(createDatasetPlot1(getSelectedHeight())));
+				jPanel1.add(createChart2(createDatasetPlot2(getSelectedHeight())));
+				jPanel1.updateUI();
 			}
 		};
 		hightSelect.addChangeListener(hightListener);
-		area0.add(hightSelect);
+		hightSelect.setMajorTickSpacing(20);
+		hightSelect.setMinorTickSpacing(2);
+		hightSelect.setPaintTicks(true);
+		hightSelect.setPaintLabels(true);
+		jPanel1.add(hightSelect);
 		
-		//create area 1 with a temp image for plot 1
-		JPanel area1 = new JPanel();
-		ImageIcon tempImg1 = new ImageIcon("media/XJYnz.png");
-		JLabel label1 = new JLabel("", tempImg1, JLabel.CENTER);
-		area1.add(label1);
+		//create plot 1
+
+//		ImageIcon tempImg1 = new ImageIcon("media/XJYnz.png");
+//		JLabel label1 = new JLabel("", tempImg1, JLabel.CENTER);
+//		area1.add(label1);
+		jPanel1.add(createChart1(createDatasetPlot1(getSelectedHeight())));
 		
-		//create area 2 with a temp image for plot 2
-		JPanel area2 = new JPanel();
-		ImageIcon tempImg2 = new ImageIcon("media/tjOQZ.png");
-		JLabel label2 = new JLabel("", tempImg2, JLabel.CENTER);
-		area2.add(label2);
+		//create plot 2
+//		ImageIcon tempImg2 = new ImageIcon("media/tjOQZ.png");
+//		JLabel label2 = new JLabel("", tempImg2, JLabel.CENTER);
+//		area2.add(label2);
+		jPanel1.add(createChart2(createDatasetPlot2(getSelectedHeight())));
 		
-		//add Areas to Panel 1
-		jPanel1.add(area0);
-		jPanel1.add(area1);
-		jPanel1.add(area2);
-		
+
 		//create pane 2
 		JPanel jPanel2 = new JPanel();
 		jPanel2.setLayout(new BoxLayout(jPanel2, BoxLayout.Y_AXIS));
 		
-		//create area 3 for plot 1 second pane
+		//create area 3 for plot 3 second pane
 		JPanel area3 = new JPanel();
 		ImageIcon tempImg3 = new ImageIcon("media/TimeSeriesGraph.jpg");
 		JLabel label3 = new JLabel("", tempImg3, JLabel.CENTER);
 		area3.add(label3);
-		
-		//create area 4 for plot 2 second pane
+
+		//create area 4 for plot 4 second pane
 		JPanel area4 = new JPanel();
 		ImageIcon tempImg4 = new ImageIcon("media/tsplot.jpg");
 		JLabel label4 = new JLabel("", tempImg4, JLabel.CENTER);
@@ -99,7 +134,196 @@ public class Main {
 		mainWindow.setVisible(true);
 	}
 	
+
 	
+    //create Sample Data set for plot2
+    private static XYZDataset createDatasetPlot1(int height) { 
+    	int temp = height;
+        return new XYZDataset() { 
+            public int getSeriesCount() { 
+                return 1; 
+            } 
+            public int getItemCount(int series) { 
+                return 10000; 
+            } 
+            public Number getX(int series, int item) { 
+                return new Double(getXValue(series, item)); 
+            } 
+            public double getXValue(int series, int item) { 
+                return item / 100 - 50; 
+            } 
+            public Number getY(int series, int item) { 
+                return new Double(getYValue(series, item)); 
+            } 
+            public double getYValue(int series, int item) { 
+                return item - (item / 100) * 100 - 50; 
+            } 
+            public Number getZ(int series, int item) { 
+                return new Double(getZValue(series, item)); 
+            } 
+            public double getZValue(int series, int item) { 
+                double x = getXValue(series, item); 
+                double y = getYValue(series, item); 
+                return Math.sin(Math.sqrt(x * x + y * y + x * y) / temp); 
+            } 
+            public void addChangeListener(DatasetChangeListener listener) { 
+                // ignore - this dataset never changes 
+            } 
+            public void removeChangeListener(DatasetChangeListener listener) { 
+                // ignore 
+            } 
+            public DatasetGroup getGroup() { 
+                return null; 
+            } 
+            public void setGroup(DatasetGroup group) { 
+                // ignore 
+            } 
+            public Comparable getSeriesKey(int series) { 
+                return "sin(sqrt(x + y))"; 
+            } 
+            public int indexOf(Comparable seriesKey) { 
+                return 0; 
+            } 
+            public DomainOrder getDomainOrder() { 
+                return DomainOrder.ASCENDING; 
+            }         
+        }; 
+    } 
+    
+    //create Sample Data set for plot2
+    private static XYZDataset createDatasetPlot2(int height) { 
+        return new XYZDataset() { 
+            public int getSeriesCount() { 
+                return 1; 
+            } 
+            public int getItemCount(int series) { 
+                return 10000; 
+            } 
+            public Number getX(int series, int item) { 
+                return new Double(getXValue(series, item)); 
+            } 
+            public double getXValue(int series, int item) { 
+                return item / 100 - 50; 
+            } 
+            public Number getY(int series, int item) { 
+                return new Double(getYValue(series, item)); 
+            } 
+            public double getYValue(int series, int item) { 
+                return item - (item / 100) * 100 - 50; 
+            } 
+            public Number getZ(int series, int item) { 
+                return new Double(getZValue(series, item)); 
+            } 
+            public double getZValue(int series, int item) { 
+                double x = getXValue(series, item); 
+                double y = getYValue(series, item); 
+                return Math.sin(Math.sqrt(x * x + y * y) / height); 
+            } 
+            public void addChangeListener(DatasetChangeListener listener) { 
+                // ignore - this dataset never changes 
+            } 
+            public void removeChangeListener(DatasetChangeListener listener) { 
+                // ignore 
+            } 
+            public DatasetGroup getGroup() { 
+                return null; 
+            } 
+            public void setGroup(DatasetGroup group) { 
+                // ignore 
+            } 
+            public Comparable getSeriesKey(int series) { 
+                return "sin(sqrt(x + y))"; 
+            } 
+            public int indexOf(Comparable seriesKey) { 
+                return 0; 
+            } 
+            public DomainOrder getDomainOrder() { 
+                return DomainOrder.ASCENDING; 
+            }         
+        }; 
+    }
+	
+    private static ChartPanel createChart1(XYZDataset dataset) { 
+        NumberAxis xAxis = new NumberAxis("X"); 
+        xAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits()); 
+        xAxis.setLowerMargin(0.0); 
+        xAxis.setUpperMargin(0.0); 
+        NumberAxis yAxis = new NumberAxis("Y"); 
+        yAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits()); 
+        yAxis.setLowerMargin(0.0); 
+        yAxis.setUpperMargin(0.0); 
+        XYBlockRenderer renderer = new XYBlockRenderer(); 
+        PaintScale scale = new GrayPaintScale(-2.0, 1.0);
+        renderer.setPaintScale(scale); 
+        XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer); 
+        plot.setBackgroundPaint(Color.lightGray); 
+        plot.setDomainGridlinesVisible(false); 
+        plot.setRangeGridlinePaint(Color.white); 
+        JFreeChart chart = new JFreeChart("Temperature Contour Plot", plot); 
+        chart.removeLegend(); 
+        //chart.setBackgroundPaint(Color.white); 
+        NumberAxis scaleAxis = new NumberAxis("Scale");
+        scaleAxis.setAxisLinePaint(Color.white);
+        scaleAxis.setTickMarkPaint(Color.white);
+        scaleAxis.setTickLabelFont(new Font("Dialog", Font.PLAIN, 7));
+        PaintScaleLegend legend = new PaintScaleLegend(new GrayPaintScale(),
+                scaleAxis);
+        legend.setStripOutlineVisible(false);
+        legend.setSubdivisionCount(20);
+        legend.setAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+        legend.setAxisOffset(5.0);
+        legend.setMargin(new RectangleInsets(5, 5, 5, 5));
+        legend.setFrame(new BlockBorder(Color.black));
+        legend.setPadding(new RectangleInsets(10, 10, 10, 10));
+        legend.setStripWidth(10);
+        legend.setPosition(RectangleEdge.RIGHT);
+        //legend.setBackgroundPaint(new Color(120, 120, 180));
+        chart.addSubtitle(legend);
+        //chart.setBackgroundPaint(new Color(180, 180, 250));
+        ChartUtilities.applyCurrentTheme(chart);
+        return new ChartPanel(chart); 
+    }
+    
+    private static ChartPanel createChart2(XYZDataset dataset) { 
+        NumberAxis xAxis = new NumberAxis("X"); 
+        xAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits()); 
+        xAxis.setLowerMargin(0.0); 
+        xAxis.setUpperMargin(0.0); 
+        NumberAxis yAxis = new NumberAxis("Y"); 
+        yAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits()); 
+        yAxis.setLowerMargin(0.0); 
+        yAxis.setUpperMargin(0.0); 
+        XYBlockRenderer renderer = new XYBlockRenderer(); 
+        PaintScale scale = new GrayPaintScale(-2.0, 1.0); 
+        renderer.setPaintScale(scale); 
+        XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer); 
+        plot.setBackgroundPaint(Color.lightGray); 
+        plot.setDomainGridlinesVisible(false); 
+        plot.setRangeGridlinePaint(Color.white); 
+        JFreeChart chart = new JFreeChart("Pressure Contour Plot", plot); 
+        chart.removeLegend(); 
+        //chart.setBackgroundPaint(Color.white); 
+        NumberAxis scaleAxis = new NumberAxis("Scale");
+        scaleAxis.setAxisLinePaint(Color.white);
+        scaleAxis.setTickMarkPaint(Color.white);
+        scaleAxis.setTickLabelFont(new Font("Dialog", Font.PLAIN, 7));
+        PaintScaleLegend legend = new PaintScaleLegend(new GrayPaintScale(),
+                scaleAxis);
+        legend.setStripOutlineVisible(false);
+        legend.setSubdivisionCount(20);
+        legend.setAxisLocation(AxisLocation.BOTTOM_OR_LEFT);
+        legend.setAxisOffset(5.0);
+        legend.setMargin(new RectangleInsets(5, 5, 5, 5));
+        legend.setFrame(new BlockBorder(Color.black));
+        legend.setPadding(new RectangleInsets(10, 10, 10, 10));
+        legend.setStripWidth(10);
+        legend.setPosition(RectangleEdge.RIGHT);
+        //legend.setBackgroundPaint(new Color(120, 120, 180));
+        chart.addSubtitle(legend);
+        //chart.setBackgroundPaint(new Color(180, 180, 250));
+        ChartUtilities.applyCurrentTheme(chart);
+        return new ChartPanel(chart);
+    }
 	
 	
 	public static void main(String[] args) {
@@ -110,5 +334,6 @@ public class Main {
 				new Main().display();
 			}
 		});
+
 	}
 }
